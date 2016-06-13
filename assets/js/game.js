@@ -13,7 +13,7 @@
         width : 10,
         height : 10,
         speed_x : {
-            current_speed : 0,
+            current_speed : 1,
             max_speed : 2,
             acceleration : 0.2,
         },
@@ -21,6 +21,23 @@
             current_speed : 0,
             max_speed : 3.8,
             acceleration : 0,
+        },
+        owner : 0,
+    };
+
+    // Player
+    var player = {
+        x : 0,
+        y : 0,
+        width : 20,
+        height : 60,
+        anchor : {
+            x : 0 + 20
+        },
+        color : '#ff9944',
+        controls : {
+            LEFT : 0,
+            RIGHT : 0
         }
     };
 
@@ -55,22 +72,82 @@
         ball.x = canvas.width/2 - ball.width/2;
         ball.y = height_limit;
         mov.DOWN = 1;
-        mov.RIGHT = 1;
+        mov.RIGHT = 0;
+        ball.owner = 'p1';
+
+        //Player
+        player.x = canvas.width/2 - ball.width/2 - player.width;
+        player.anchor.x = player.x + player.width;
+        player.y = floor.x - player.height;
+
+        //Controls
+        document.addEventListener( 'keypress', controlActive );
+        document.addEventListener( 'keyup', controlRelease );
 
         setInterval( loop, 1000/60 );
+    }
+
+    function controlActive( e ) {
+        switch( e.keyCode ) {
+            case 37: player.controls.LEFT = 1;
+            break;
+            case 39: player.controls.RIGHT = 1;
+            break;
+        }
+    }
+
+    function controlRelease( e ) {
+        switch( e.keyCode ) {
+            case 37: player.controls.LEFT = 0; player.controls.FLIP = 1;
+            break;
+            case 39: player.controls.RIGHT = 0; player.controls.FLIP = 1;
+            break;
+        }
     }
 
     function loop() {
         // fpsCount();
         // console.log( fps.result );
 
-        //console.log( mov );
         update();
         draw();
     }
 
     function update() {
         ballMovement();
+
+        if( ball.owner !== 0 ) {
+            if( ball.owner == 'p1' ) {
+                ball.x = player.anchor.x;
+            }
+        }
+
+        // Controls
+        if( player.controls.FLIP ) {
+            playerFlip();
+        }
+
+        if( player.controls.LEFT ) {
+            player.x -= 1;
+            player.anchor.x -= 1;
+        }
+
+        if( player.controls.RIGHT ) {
+            player.x += 1;
+            player.anchor.x += 1;
+        }
+    }
+
+    function playerFlip() {
+        if( player.controls.LEFT ) {
+            player.anchor.x -= player.width;
+            player.controls.FLIP = 0;
+        }
+
+        if( player.controls.RIGHT ) {
+            player.anchor.x += player.width;
+            player.controls.FLIP = 0;
+        }
     }
 
     function draw() {
@@ -79,6 +156,8 @@
         context.fillRect( 0, 0, canvas.width, canvas.height );
         context.fillStyle = "#fff";
         context.fillRect( ball.x, ball.y, ball.width, ball.height );
+        context.fillStyle = player.color;
+        context.fillRect( player.x, player.y, player.width, player.height );
     }
 
     function createCanvas( id, width, height ) {
@@ -119,23 +198,23 @@
             }
         }
 
-        // if( mov.LEFT ) {
-        //     if( ball.x > 0 ) {
-        //         ball.x -= ball.speed_x.current_speed;
-        //     } else {
-        //         mov.LEFT = 0;
-        //         mov.RIGHT = 1;
-        //     }
-        // }
-        //
-        // if( mov.RIGHT ) {
-        //     if( ball.x < canvas.width - ball.width ) {
-        //         ball.x += ball.speed_x.current_speed;
-        //     } else {
-        //         mov.LEFT = 1;
-        //         mov.RIGHT = 0;
-        //     }
-        // }
+        if( mov.LEFT ) {
+            if( ball.x > 0 ) {
+                ball.x -= ball.speed_x.current_speed;
+            } else {
+                mov.LEFT = 0;
+                mov.RIGHT = 1;
+            }
+        }
+
+        if( mov.RIGHT ) {
+            if( ball.x < canvas.width - ball.width ) {
+                ball.x += ball.speed_x.current_speed;
+            } else {
+                mov.LEFT = 1;
+                mov.RIGHT = 0;
+            }
+        }
     }
 
     function floorCollision( y, height ) {
