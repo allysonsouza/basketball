@@ -12,6 +12,7 @@
         y : 0,
         width : 10,
         height : 10,
+        color : '#ff9944',
         speed_x : {
             current_speed : 1,
             max_speed : 2,
@@ -19,7 +20,7 @@
         },
         speed_y : {
             current_speed : 0,
-            max_speed : 3.8,
+            max_speed : 3.2,
             acceleration : 0,
         },
         owner : 0,
@@ -29,16 +30,18 @@
     var player = {
         x : 0,
         y : 0,
-        width : 20,
-        height : 60,
+        width : 15,
+        height : 80,
         anchor : {
             x : 0 + 20
         },
-        color : '#ff9944',
+        color : '#44ff88',
         controls : {
             LEFT : 0,
-            RIGHT : 0
-        }
+            RIGHT : 0,
+            LAUNCH : 0,
+        },
+        dir : 1,
     };
 
     // Floor
@@ -51,6 +54,7 @@
         DOWN : 0,
         LEFT : 0,
         RIGHT : 0,
+        LAUNCH : 0,
     }
 
     // General
@@ -93,6 +97,8 @@
             break;
             case 39: player.controls.RIGHT = 1;
             break;
+            case 0: player.controls.LAUNCH = 1;
+            break;
         }
     }
 
@@ -116,6 +122,28 @@
     function update() {
         ballMovement();
 
+        // Launch
+        if( player.controls.LAUNCH && ball.owner !== null ) {
+            ball.owner = null;
+
+            if( player.dir == 1 ) {
+                mov.RIGHT = 1;
+            }
+
+            if( player.dir == -1 ) {
+                mov.LEFT = -1;
+            }
+
+            ball.y = player.y - ball.height;
+            ball.speed_y.max_speed = 4;
+            ball.speed_y.current_speed = 4;
+            mov.UP = 0;
+            mov.DOWN = 0;
+            mov.LAUNCH = 1;
+            player.controls.LAUNCH = 0;
+        }
+
+        // Ball Snap
         if( ball.owner !== 0 ) {
             if( ball.owner == 'p1' ) {
                 ball.x = player.anchor.x;
@@ -128,25 +156,27 @@
         }
 
         if( player.controls.LEFT ) {
-            player.x -= 1;
-            player.anchor.x -= 1;
+            player.x -= 2;
+            player.anchor.x -= 2;
         }
 
         if( player.controls.RIGHT ) {
-            player.x += 1;
-            player.anchor.x += 1;
+            player.x += 2;
+            player.anchor.x += 2;
         }
     }
 
     function playerFlip() {
         if( player.controls.LEFT ) {
-            player.anchor.x -= player.width;
+            player.anchor.x = player.x - ball.width;
             player.controls.FLIP = 0;
+            player.dir = -1;
         }
 
         if( player.controls.RIGHT ) {
-            player.anchor.x += player.width;
+            player.anchor.x = player.x + player.width;
             player.controls.FLIP = 0;
+            player.dir = 1;
         }
     }
 
@@ -154,7 +184,7 @@
         context.clearRect( 0, 0, canvas.width, canvas.height );
         context.fillStyle = "#000";
         context.fillRect( 0, 0, canvas.width, canvas.height );
-        context.fillStyle = "#fff";
+        context.fillStyle = ball.color;
         context.fillRect( ball.x, ball.y, ball.width, ball.height );
         context.fillStyle = player.color;
         context.fillRect( player.x, player.y, player.width, player.height );
@@ -170,6 +200,17 @@
     }
 
     function ballMovement() {
+        if( mov.LAUNCH ) {
+            if( ball.speed_y.current_speed > 0 ) {
+                ball.speed_y.current_speed = ball.speed_y.current_speed - gravity;
+                ball.y -= ball.speed_y.current_speed;
+            } else {
+                mov.LAUNCH = 0;
+                mov.DOWN = 1;
+                ball.speed_y.acceleration = 0;
+            }
+        }
+
         if( mov.UP ) {
             if( ball.speed_y.current_speed > 0 ) {
                 ball.speed_y.current_speed = ball.speed_y.current_speed - gravity;
