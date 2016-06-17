@@ -124,7 +124,7 @@
             break;
             case 38: if( ball.owner == 'p1' ) player.controls.LAUNCH = 1;
             break;
-            case 40: player.controls.TACKLE = 1;
+            case 40: if( ball.owner != 'p1' ) player.controls.TACKLE = 1;
             break;
             case 65: player2.controls.LEFT = 1;
             break;
@@ -132,7 +132,7 @@
             break;
             case 87: if( ball.owner == 'p2' ) player2.controls.LAUNCH = 1;
             break;
-            case 83: player2.controls.TACKLE = 1;
+            case 83: if( ball.owner != 'p2' ) player2.controls.TACKLE = 1;
             break;
         }
     }
@@ -174,8 +174,21 @@
         // Tackle
         if( player.controls.TACKLE && ball.owner != 'p1' ) {
             tackle( player );
-        } else if( player2.controls.TACKLE && ball.owner != 'p2' ) {
+        }
+        if( player2.controls.TACKLE && ball.owner != 'p2' ) {
             tackle( player2 );
+        }
+
+        // Ball Owner
+        if( ball.owner === null && mov.LAUNCH == 0 ) {
+            var collide_p1 = boxCollision( player.x, player.y, player.width, player.height, ball.x, ball.y, ball.width, ball.height );
+            var collide_p2 = boxCollision( player2.x, player2.y, player2.width, player2.height, ball.x, ball.y, ball.width, ball.height );
+
+            if( collide_p1 ) {
+                ball.owner = 'p1';
+            } else if( collide_p2 ) {
+                ball.owner = 'p2';
+            }
         }
 
         // Ball Snap
@@ -194,15 +207,24 @@
     }
 
     function tackle( player ) {
-        player.TACKLE == 0;
+        player.controls.TACKLE = 0;
+        var collide = boxCollision( player.x, player.y, player.width, player.height, ball.x, ball.y, ball.width, ball.height );
+
+        if( collide === true ) {
+            switchOwner();
+        }
+    }
+
+    function switchOwner() {
+        if( ball.owner == 'p1' ) {
+            ball.owner = 'p2';
+        } else if( ball.owner == 'p2' ) {
+            ball.owner = 'p1';
+        }
     }
 
     function boxCollision( x, y, width, height, x2, y2, width2, height2 ) {
-        if( x + width < x2,
-            x > x2 + width2,
-            y + height < y2,
-            y > y2 + width2 )
-        {
+        if( x + width < x2 || x > x2 + width2 || y + height < y2 || y > y2 + width2 ) {
             return false;
         } else {
             return true;
