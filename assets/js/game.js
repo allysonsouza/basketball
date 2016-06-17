@@ -40,6 +40,7 @@
             LEFT : 0,
             RIGHT : 0,
             LAUNCH : 0,
+            TACKLE : 0,
         },
         dir : 1,
     };
@@ -58,6 +59,7 @@
             LEFT : 0,
             RIGHT : 0,
             LAUNCH : 0,
+            TACKLE : 0,
         },
         dir : -1,
     };
@@ -122,11 +124,15 @@
             break;
             case 38: if( ball.owner == 'p1' ) player.controls.LAUNCH = 1;
             break;
+            case 40: player.controls.TACKLE = 1;
+            break;
             case 65: player2.controls.LEFT = 1;
             break;
             case 68: player2.controls.RIGHT = 1;
             break;
             case 87: if( ball.owner == 'p2' ) player2.controls.LAUNCH = 1;
+            break;
+            case 83: player2.controls.TACKLE = 1;
             break;
         }
     }
@@ -165,6 +171,13 @@
             }
         }
 
+        // Tackle
+        if( player.controls.TACKLE && ball.owner != 'p1' ) {
+            tackle( player );
+        } else if( player2.controls.TACKLE && ball.owner != 'p2' ) {
+            tackle( player2 );
+        }
+
         // Ball Snap
         if( ball.owner !== 0 ) {
             if( ball.owner == 'p1' ) {
@@ -178,6 +191,22 @@
         // Controls
         playerMovement( player );
         playerMovement( player2 );
+    }
+
+    function tackle( player ) {
+        player.TACKLE == 0;
+    }
+
+    function boxCollision( x, y, width, height, x2, y2, width2, height2 ) {
+        if( x + width < x2,
+            x > x2 + width2,
+            y + height < y2,
+            y > y2 + width2 )
+        {
+            return false;
+        } else {
+            return true;
+        }
     }
 
     function playerMovement( player ) {
