@@ -44,6 +44,24 @@
         dir : 1,
     };
 
+    // Player
+    var player2 = {
+        x : 0,
+        y : 0,
+        width : 15,
+        height : 80,
+        anchor : {
+            x : 0
+        },
+        color : '#4477DD',
+        controls : {
+            LEFT : 0,
+            RIGHT : 0,
+            LAUNCH : 0,
+        },
+        dir : -1,
+    };
+
     // Floor
     var floor = {
         x : 300
@@ -77,15 +95,20 @@
         ball.y = height_limit;
         mov.DOWN = 1;
         mov.RIGHT = 0;
-        ball.owner = 'p1';
+        ball.owner = 'p2';
 
         //Player
         player.x = canvas.width/2 - ball.width/2 - player.width;
         player.anchor.x = player.x + player.width;
         player.y = floor.x - player.height;
 
+        //Player2
+        player2.x = canvas.width/2 + ball.width/2;
+        player2.anchor.x = player2.x - ball.width;
+        player2.y = floor.x - player2.height;
+
         //Controls
-        document.addEventListener( 'keypress', controlActive );
+        document.addEventListener( 'keydown', controlActive );
         document.addEventListener( 'keyup', controlRelease );
 
         setInterval( loop, 1000/60 );
@@ -97,7 +120,13 @@
             break;
             case 39: player.controls.RIGHT = 1;
             break;
-            case 0: player.controls.LAUNCH = 1;
+            case 38: if( ball.owner == 'p1' ) player.controls.LAUNCH = 1;
+            break;
+            case 65: player2.controls.LEFT = 1;
+            break;
+            case 68: player2.controls.RIGHT = 1;
+            break;
+            case 87: if( ball.owner == 'p2' ) player2.controls.LAUNCH = 1;
             break;
         }
     }
@@ -107,6 +136,10 @@
             case 37: player.controls.LEFT = 0; player.controls.FLIP = 1;
             break;
             case 39: player.controls.RIGHT = 0; player.controls.FLIP = 1;
+            break;
+            case 65: player2.controls.LEFT = 0; player2.controls.FLIP = 1;
+            break;
+            case 68: player2.controls.RIGHT = 0; player2.controls.FLIP = 1;
             break;
         }
     }
@@ -123,24 +156,13 @@
         ballMovement();
 
         // Launch
-        if( player.controls.LAUNCH && ball.owner !== null ) {
-            ball.owner = null;
-
-            if( player.dir == 1 ) {
-                mov.RIGHT = 1;
+        if( ( player.controls.LAUNCH || player2.controls.LAUNCH ) && ball.owner !== null ) {
+            if( ball.owner == 'p1' ) {
+                launch( player );
             }
-
-            if( player.dir == -1 ) {
-                mov.LEFT = -1;
+            if( ball.owner == 'p2' ) {
+                launch( player2 );
             }
-
-            ball.y = player.y - ball.height;
-            ball.speed_y.max_speed = 4;
-            ball.speed_y.current_speed = 4;
-            mov.UP = 0;
-            mov.DOWN = 0;
-            mov.LAUNCH = 1;
-            player.controls.LAUNCH = 0;
         }
 
         // Ball Snap
@@ -148,11 +170,19 @@
             if( ball.owner == 'p1' ) {
                 ball.x = player.anchor.x;
             }
+            if( ball.owner == 'p2' ) {
+                ball.x = player2.anchor.x;
+            }
         }
 
         // Controls
+        playerMovement( player );
+        playerMovement( player2 );
+    }
+
+    function playerMovement( player ) {
         if( player.controls.FLIP ) {
-            playerFlip();
+            playerFlip( player );
         }
 
         if( player.controls.LEFT ) {
@@ -166,7 +196,27 @@
         }
     }
 
-    function playerFlip() {
+    function launch( player ) {
+        ball.owner = null;
+
+        if( player.dir == 1 ) {
+            mov.RIGHT = 1;
+        }
+
+        if( player.dir == -1 ) {
+            mov.LEFT = -1;
+        }
+
+        ball.y = player.y - ball.height;
+        ball.speed_y.max_speed = 4;
+        ball.speed_y.current_speed = 4;
+        mov.UP = 0;
+        mov.DOWN = 0;
+        mov.LAUNCH = 1;
+        player.controls.LAUNCH = 0;
+    }
+
+    function playerFlip( player ) {
         if( player.controls.LEFT ) {
             player.anchor.x = player.x - ball.width;
             player.controls.FLIP = 0;
@@ -182,12 +232,18 @@
 
     function draw() {
         context.clearRect( 0, 0, canvas.width, canvas.height );
+        //Background
         context.fillStyle = "#000";
         context.fillRect( 0, 0, canvas.width, canvas.height );
+        //Ball
         context.fillStyle = ball.color;
         context.fillRect( ball.x, ball.y, ball.width, ball.height );
+        //Player1
         context.fillStyle = player.color;
         context.fillRect( player.x, player.y, player.width, player.height );
+        //Player2
+        context.fillStyle = player2.color;
+        context.fillRect( player2.x, player2.y, player2.width, player2.height );
     }
 
     function createCanvas( id, width, height ) {
