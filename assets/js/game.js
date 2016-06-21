@@ -250,12 +250,14 @@
     function launch( player ) {
         ball.owner = null;
 
-        if( player.dir == 1 ) {
+        if( player.dir === 1 ) {
             mov.RIGHT = 1;
+            mov.LEFT = 0;
         }
 
-        if( player.dir == -1 ) {
-            mov.LEFT = -1;
+        if( player.dir === -1 ) {
+            mov.RIGHT = 0;
+            mov.LEFT = 1;
         }
 
         ball.y = player.y - ball.height;
@@ -265,6 +267,8 @@
         mov.DOWN = 0;
         mov.LAUNCH = 1;
         player.controls.LAUNCH = 0;
+        console.log( player.dir );
+        console.log( mov );
     }
 
     function playerFlip( player ) {
@@ -342,6 +346,7 @@
             } else {
                 mov.DOWN = 0;
                 mov.UP = 1;
+                ball.speed_y.max_speed = 3.2;
                 ball.speed_y.acceleration = 0;
             }
         }
@@ -362,14 +367,6 @@
                 mov.LEFT = 1;
                 mov.RIGHT = 0;
             }
-        }
-    }
-
-    function floorCollision( y, height ) {
-        if( y + height < floor.x ) {
-            return false;
-        } else {
-            return true;
         }
     }
 
